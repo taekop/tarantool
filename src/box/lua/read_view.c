@@ -248,6 +248,8 @@ lbox_new_read_view(struct lua_State *L, struct read_view *rv)
 /**
  * Opens a database read view.
  * Takes the new read view name (string).
+ * May yield waiting out the read view creation rate limit, see
+ * read_view_throttle_interval in `box/read_view.c'.
  * On error, raises a Lua exception.
  */
 static int

@@ -236,6 +236,14 @@ struct read_view_opts {
 	 * encoded in the MP_COMPRESSION MsgPack extension manually.
 	 */
 	bool disable_decompression;
+	/**
+	 * If set, read_view_new() doesn't yield when the read view can't be
+	 * opened immediately because of the rate limit imposed by the
+	 * read_view_throttle_interval. Instead, it fails immediately, setting
+	 * diag to ER_READ_VIEW_THROTTLED. Ignored if is_system is set.
+	 * Default: false.
+	 */
+	bool disable_wait;
 };
 
 /** Sets read view options to default values. */
@@ -247,6 +255,12 @@ read_view_opts_create(struct read_view_opts *opts);
  * view was open will not be visible from the read view.
  *
  * Engines that don't support read view creation are silently skipped.
+ *
+ * Unless opts->is_system is set, the call is subject to the read view creation
+ * rate limit (see read_view_throttle_interval in read_view.c): it blocks the
+ * calling fiber until the limit allows to open a new read view, or, if
+ * opts->disable_wait is set, fails with ER_READ_VIEW_THROTTLED without
+ * blocking.
  *
  * On error, returns NULL and sets diag.
  */
